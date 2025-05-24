@@ -1,26 +1,90 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
+
+
+/* === Base Theme Tokens Using HSL === */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Color Tokens (HSL for flexibility & transparency) */
+  --background-hsl: 240, 27%, 98%;
+  --foreground-hsl: 228, 29%, 7%;
+  --primary-hsl: 252, 94%, 67%;
+  --primary-light-hsl: 252, 100%, 73%;
+  --danger-hsl: 0, 80%, 63%;
+  --danger-soft-hsl: 0, 100%, 80%;
+  --panel-dark-hsl: 231, 29%, 21%;
+  --panel-darker-hsl: 0, 0%, 94%;
+  --text-muted-hsl: 231, 20%, 61%;
+  --text-accent-hsl: 231, 37%, 63%;
+  --border-light-hsl: 231, 73%, 93%;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+
+  /* Solid Color Tokens */
+  --color-background: hsl(var(--background-hsl));
+  --color-foreground: hsl(var(--foreground-hsl));
+  --color-primary: hsl(var(--primary-hsl));
+  --color-primary-light: hsl(var(--primary-light-hsl));
+  --color-danger: hsl(var(--danger-hsl));
+  --color-danger-soft: hsl(var(--danger-soft-hsl));
+  --color-panel-dark: hsl(var(--panel-dark-hsl));
+  --color-panel-darker: hsl(var(--panel-darker-hsl));
+  --color-text-muted: hsl(var(--text-muted-hsl));
+  --color-text-accent: hsl(var(--text-accent-hsl));
+  --color-border-light: hsl(var(--border-light-hsl));
+  --color-border-light-soft: hsl(var(--border-light-hsl) / 0.9);
+  --border-border-light-soft: var(--color-border-light-soft);
+
+
+  /* Font Family with Fallbacks */
+  --league-spartan: 'League Spartan', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --font-sans: var(--league-spartan);
+  --font-mono: var(--league-spartan);
 }
 
+/* === Dark Theme Overrides via .dark class === */
+.dark {
+  --background-hsl: 233, 30%, 11%;
+  --foreground-hsl: 231, 73%, 93%;
+  --panel-dark-hsl: 231, 29%, 21%;
+  --panel-darker-hsl: 233, 30%, 21%;
+  --color-background: #141625;
+  --color-foreground: #DFE3FA;
+
+  /* Re-evaluate these if want different accent/danger styles in dark mode */
+}
+
+/* === Tailwind Theme Integration === */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background-hsl));
+  --color-foreground: hsl(var(--foreground-hsl));
+  --color-primary: hsl(var(--primary-hsl));
+  --color-primary-light: hsl(var(--primary-light-hsl));
+  --color-danger: hsl(var(--danger-hsl));
+  --color-danger-soft: hsl(var(--danger-soft-hsl));
+  --color-panel-dark: hsl(var(--panel-dark-hsl));
+  --color-panel-darker: hsl(var(--panel-darker-hsl));
+  --color-text-muted: hsl(var(--text-muted-hsl));
+  --color-text-accent: hsl(var(--text-accent-hsl));
+  --color-border-light: hsl(var(--border-light-hsl));
+  --border-border-light-soft: var(--color-border-light-soft);
+
+
+
+
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* === Base Body Styles === */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+
+
