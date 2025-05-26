@@ -85,42 +85,39 @@ export default function InvoicePreview({ invoice, onClick }: InvoicePreviewProps
         </div>
       </div>
 
-      {/* Desktop layout */}
-      <div className="hidden sm:flex sm:items-center sm:justify-between w-full">
-        <div className="flex flex-row items-center space-x-6">
-          <span className="text-sm font-bold text-gray-800 dark:text-white">
-            #{invoice.id}
-          </span>
-          <span className="text-sm text-gray-500 dark:text-gray-300">
-            Due {formattedDate}
-          </span>
-          <span className="text-sm text-gray-500 dark:text-gray-300">
-            {invoice.client?.name}
-          </span>
-        </div>
+  {/* Desktop layout */}
+<div className="hidden sm:grid w-full grid-cols-[120px_160px_1fr_150px_150px_30px] items-center gap-4">
+  <span className="text-sm font-bold text-gray-800 dark:text-white">
+    #{invoice.id}
+  </span>
+  <span className="text-sm text-gray-500 dark:text-gray-300">
+    Due {formattedDate}
+  </span>
+  <span className="text-sm text-gray-500 dark:text-gray-300 truncate">
+    {invoice.client?.name}
+  </span>
+  <span className="text-lg font-bold text-gray-900 dark:text-white">
+    {formattedTotal}
+  </span>
+  <span
+  className={cn(
+    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-md justify-center w-[140px]',
+    statusStyles[invoice.status].bg,
+    statusStyles[invoice.status].text
+  )}
+>
+  <span
+    className={cn(
+      'w-2 h-2 rounded-full',
+      statusStyles[invoice.status].dot
+    )}
+  />
+  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+</span>
 
-        <div className="flex items-center space-x-4">
-          <span className="text-lg font-bold text-gray-900 dark:text-white">
-            {formattedTotal}
-          </span>
-          <span
-            className={cn(
-              'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-md',
-              statusStyles[invoice.status].bg,
-              statusStyles[invoice.status].text
-            )}
-          >
-            <span
-              className={cn(
-                'w-2 h-2 rounded-full',
-                statusStyles[invoice.status].dot
-              )}
-            />
-            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-          </span>
-          <span className="text-purple-600">{'>'}</span>
-        </div>
-      </div>
+  <span className="text-purple-600 justify-self-end">{'>'}</span>
+</div>
+
     </div>
   );
 }
