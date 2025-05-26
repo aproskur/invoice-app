@@ -1,16 +1,20 @@
 export type Invoice = {
-    id: string;
-    description: string;
-    status: 'paid' | 'pending' | 'draft';
-    invoiceDate: string;      
-    paymentDue: string;       
-    clientName: string;
-    clientEmail: string;
-    senderAddress: Address;
-    clientAddress: Address;
-    items: InvoiceItem[];
-    total: number;
+  id: string;
+  description: string;
+  status: 'paid' | 'pending' | 'draft';
+  invoiceDate: string;
+  paymentDue: string;
+  senderAddress: Address;
+  clientAddress: Address;
+  client: {
+    name: string;
+    email: string;
   };
+  totalAmount: number;
+  items: InvoiceItem[];
+};
+
+
   
   export type Address = {
     street: string;

@@ -1,10 +1,12 @@
 "use client";
 import Image from "next/image";
 import { TopBar } from "@/components/Topbar";
-import InvoiceHub from "@/components/InvoiceHub";
 import { Invoice } from "@/types/invoice";
 import { useUIStore } from "@/store/uiStore";
 import InvoiceForm from "@/components/InvoiceForm";
+import { useEffect } from 'react';
+import { useInvoiceStore } from '@/store/invoiceStore';
+import InvoiceHub from '@/components/InvoiceHub';
 
 export const oneInvoice: Invoice[] = [
   {
@@ -46,17 +48,28 @@ export const oneInvoice: Invoice[] = [
 export default function Home() {
   const showForm = useUIStore((state) => state.showForm);
   const closeForm = useUIStore((state) => state.closeForm);
+  const { invoices, setInvoices } = useInvoiceStore();
+
+  useEffect(() => {
+    fetch('/api/invoices')
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Fetched invoices:', data);
+        setInvoices(data);
+      })
+      .catch(console.error);
+  }, [setInvoices]);
 
   return (
-    <main className="h-screen pt-4 pr-32 pl-32 relative">
-      <TopBar totalInvoices={0} />
-      <InvoiceHub invoices={oneInvoice} />
+    <main className="h-screen pr-1 pl-1 pt-4 md:pr-32 md:pl-32 relative">
+      <TopBar totalInvoices={invoices.length} />
+      <InvoiceHub invoices={invoices} />
       
 
       {showForm && (
         <div className="absolute inset-0 z-50 flex">
           {/* Invoice Form Panel */}
-          <div className="w-[600px] h-full bg-white shadow-lg p-6 overflow-auto z-50 animate-slide-in-left">            <InvoiceForm
+          <div className="dark:bg-background w-[600px] h-full bg-white shadow-lg p-6 overflow-auto z-50 animate-slide-in-left">            <InvoiceForm
               mode="create"
               onCancel={closeForm}
               onSubmit={(data) => {

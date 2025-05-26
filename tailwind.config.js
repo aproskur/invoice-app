@@ -19,6 +19,7 @@ module.exports = {
           'panel-dark': 'hsl(var(--panel-dark-hsl))',
           'panel-darker': 'hsl(var(--panel-darker-hsl))',
           border: 'hsl(var(--border-light-hsl))',
+          'extra-dark': 'hsl(var(--extra-dark-hsl))',
 
 
         },

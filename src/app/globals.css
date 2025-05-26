@@ -19,6 +19,7 @@
   --border-light-hsl: 231, 73%, 93%;
   --color-background: #ffffff;
   --color-foreground: #000000;
+  --extra-dark-hsl: 228, 29%, 7%;
 
   /* Solid Color Tokens */
   --color-background: hsl(var(--background-hsl));
@@ -51,6 +52,7 @@
   --panel-darker-hsl: 233, 30%, 21%;
   --color-background: #141625;
   --color-foreground: #DFE3FA;
+  --color-extra-dark: hsl(var(--extra-dark-hsl));
 
   /* Re-evaluate these if want different accent/danger styles in dark mode */
 }

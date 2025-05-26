@@ -66,11 +66,11 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl">
+    <form onSubmit={handleSubmit} className="dark:bg-background space-y-6 rounded-xl">
       <h2 className="text-2xl font-bold">
         {mode === "edit" ? `Edit #${invoice?.id}` : "New Invoice"}
       </h2>
-      <h3 className="text-primary font-bold">Bill Form</h3>
+      <h3 className="text-primary font-bold">Bill From</h3>
 
 {/* Row 1: Street Address */}
 <div className="grid grid-cols-1 gap-2 mb-4">
@@ -88,7 +88,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
         senderAddress: { ...prev.senderAddress, street: e.target.value },
       }))
     }
-    className="border border-gray-200 p-2 rounded w-full"
+    className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
   />
 </div>
 
@@ -110,7 +110,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           senderAddress: { ...prev.senderAddress, city: e.target.value },
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
 
@@ -130,7 +130,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           senderAddress: { ...prev.senderAddress, postCode: e.target.value },
         }))
       }
-      className="border border-gray-200 border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
 
@@ -150,7 +150,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           senderAddress: { ...prev.senderAddress, country: e.target.value },
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
 </div>
@@ -169,7 +169,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
     name="clientName"
     value={form.clientName}
     onChange={handleChange}
-    className="border border-gray-200 p-2 rounded w-full"
+    className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
   />
 </div>
 
@@ -184,7 +184,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
     name="clientEmail"
     value={form.clientEmail}
     onChange={handleChange}
-    className="border border-gray-200 p-2 rounded w-full"
+    className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
   />
 </div>
 
@@ -204,7 +204,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
         clientAddress: { ...prev.clientAddress, street: e.target.value },
       }))
     }
-    className="border border-gray-200 p-2 rounded w-full"
+    className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
   />
 </div>
 
@@ -225,7 +225,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           clientAddress: { ...prev.clientAddress, city: e.target.value },
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
   <div className="flex flex-col gap-2">
@@ -243,7 +243,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           clientAddress: { ...prev.clientAddress, postCode: e.target.value },
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
   <div className="flex flex-col gap-2">
@@ -261,7 +261,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           clientAddress: { ...prev.clientAddress, country: e.target.value },
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
     />
   </div>
 </div>
@@ -280,7 +280,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
       name="invoiceDate"
       value={form.invoiceDate}
       onChange={handleChange}
-      className="border border-gray-200 p-2 rounded w-full h-[42px] text-sm"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full h-[42px] text-sm"
     />
   </div>
 
@@ -299,7 +299,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
           paymentTerms: e.target.value,
         }))
       }
-      className="border border-gray-200 p-2 rounded w-full h-[42px] text-sm"
+      className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full h-[42px] text-sm"
     >
       <option value="Net 7">Net 7 Days</option>
       <option value="Net 14">Net 14 Days</option>
@@ -320,7 +320,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
     name="description"
     value={form.description}
     onChange={handleChange}
-    className="border border-gray-200 p-2 rounded w-full"
+    className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded w-full"
   />
 </div>
 
@@ -341,26 +341,26 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
         type="text"
         value={item.name}
         onChange={(e) => handleItemChange(index, "name", e.target.value)}
-        className="border border-gray-200 p-2 rounded text-sm"
+        className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded text-sm"
       />
       <input
         type="number"
         value={item.quantity}
         onChange={(e) => handleItemChange(index, "quantity", Number(e.target.value))}
-        className="border border-gray-200 p-2 rounded text-sm"
+        className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded text-sm"
       />
       <input
         type="number"
         value={item.price}
         onChange={(e) => handleItemChange(index, "price", Number(e.target.value))}
-        className="border border-gray-200 p-2 rounded text-sm"
+        className="dark:bg-panel-dark border border-gray-200 dark:border-panel-dark p-2 rounded text-sm"
       />
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-gray-700 dark:text-foreground">
           {item.quantity * item.price || 0}
         </span>
         <button type="button" onClick={() => removeItem(index)} className="ml-2">
-          <DeleteIcon className="w-4 h-4 text-gray-400 hover:text-red-500" />
+          <DeleteIcon className="dark:w-4 h-4 text-gray-400 dark:text-foreground hover:text-red-500" />
         </button>
       </div>
     </div>
@@ -371,8 +371,8 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
     <button
       type="button"
       onClick={addItem}
-      className="text-gray-500 text-sm font-medium"
-    >
+      className="text-gray-500 text-sm font-medium dark:flex dark:justify-center dark:items-center dark:w-full dark:p-2 dark:rounded-full dark:bg-panel-dark dark:border dark:border-panel-dark dark:text-foreground"
+      >
       + Add New Item
     </button>
   </div>
@@ -380,12 +380,11 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
 
 
 
-<div className="flex justify-between items-center mt-8">
-  {/* Left: Discard / Cancel */}
+<div className="flex justify-end items-center mt-8 gap-6">  {/* Left: Discard / Cancel */}
   <button
     type="button"
     onClick={onCancel}
-    className="text-gray-500 text-sm font-medium"
+    className="dark:bg-panel-dark dark:border dark:border-panel-dark dark:px-4 dark:py-2 dark:rounded-full text-gray-500 dark:text-foreground text-sm font-medium"
   >
     {mode === "edit" ? "Cancel" : "Discard"}
   </button>

@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 
 
 
-export default function InvoiceHub({ invoices }: { invoices: Invoice[] }) {
+export default function InvoiceHub({ invoices = [] }: { invoices?: Invoice[] }) {
+
   const router = useRouter();
 
-  if (invoices.length === 0) {
+  if (!Array.isArray(invoices) || invoices.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center">
         <img
@@ -25,11 +26,12 @@ export default function InvoiceHub({ invoices }: { invoices: Invoice[] }) {
   return (
     <div className="space-y-4">
       {invoices.map((invoice) => (
-        <InvoicePreview
-          key={invoice.id}
-          invoice={invoice}
-          onClick={() => router.push(`/invoices/${invoice.id}`)}
-        />
+    <InvoicePreview
+    key={invoice.id}
+    invoice={invoice} 
+    onClick={() => router.push(`/invoices/${invoice.id}`)}
+  />
+  
       ))}
     </div>
   );

@@ -2,6 +2,9 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import UserAvatar from './UserAvatar';
+
+
 
 export default function Sidebar() {
   const [darkMode, setDarkMode] = useState(false)
@@ -21,9 +24,9 @@ export default function Sidebar() {
     <aside className="flex w-full h-16 md:h-screen md:w-20 bg-[#1E2139] flex-row md:flex-col items-center justify-between md:rounded-tr-3xl md:rounded-br-3xl overflow-hidden relative">
 
       {/* === Logo Block === */}
-      <div className="relative w-16 h-16 md:w-full md:h-20 overflow-hidden flex items-center justify-center md:rounded-tr-2xl">
+      <div className="relative w-16 h-16 md:w-full md:h-20 overflow-hidden flex items-center justify-center rounded-tr-2xl rounded-br-2xl">
         <div className="absolute inset-0 bg-[#7C5DFA]" />
-        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[#9277FF] z-10 md:rounded-tl-2xl" />
+        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-[#9277FF] z-10 rounded-tl-2xl" />
         <div className="relative z-20">
           <img src="/assets/logo.svg" alt="Logo" className="w-6 h-6" />
         </div>
