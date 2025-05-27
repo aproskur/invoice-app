@@ -25,7 +25,10 @@ const nextConfig: NextConfig = {
         }
       }
     }
-  }
+  },
+    images: {
+      domains: ['images.all-free-download.com'],
+    },
 };
 
 export default nextConfig;

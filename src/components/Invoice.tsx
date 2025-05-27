@@ -4,6 +4,8 @@ import { Invoice } from '@/types/invoice';
 import { format } from 'date-fns';
 import { useUIStore } from "@/store/uiStore"; 
 import { useInvoiceStore } from "@/store/invoiceStore"; // to set the draft
+import { useRouter } from 'next/navigation';
+
 
 type Props = {
   invoice: Invoice;
@@ -15,10 +17,35 @@ export default function Invoice({ invoice }: Props) {
   const openForm = useUIStore((state) => state.openForm);
   const setDraft = useInvoiceStore((state) => state.setDraft);
 
+
+
+const router = useRouter();
+
   const handleEdit = () => {
     setDraft(invoice);       // Pre-fill form with this invoice
     openForm();              // Show the form in edit mode
   };
+
+  const removeInvoice = useInvoiceStore((state) => state.removeInvoice);
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}`, {
+        method: 'DELETE',
+      });
+  
+      if (!res.ok) {
+        throw new Error('Failed to delete invoice');
+      }
+  
+      removeInvoice(invoice.id); // Update state to reflect deletion
+      router.push('/');
+    } catch (err) {
+      console.error(err);
+      alert('There was a problem deleting the invoice.');
+    }
+  };
+  
 
 
   const statusStyles = {
@@ -62,7 +89,7 @@ export default function Invoice({ invoice }: Props) {
     >
       Edit
     </button>
-    <button className="bg-danger text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
+    <button onClick={handleDelete} className="bg-danger text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
       Delete
     </button>
     <button className="bg-primary text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
@@ -76,7 +103,7 @@ export default function Invoice({ invoice }: Props) {
         <div className="flex flex-col md:flex-row md:justify-between gap-4">
           {/* ID + Description */}
           <div>
-            <h2 className="font-bold text-lg text-foreground">#{invoice.id}</h2>
+            <h2 className="font-bold text-lg text-foreground">#{invoice.invoiceNumber}</h2>
             <p className="text-muted">{invoice.description}</p>
           </div>
 
@@ -121,7 +148,7 @@ export default function Invoice({ invoice }: Props) {
   {/* Column 3: Sent to (desktop only, hidden on small screens) */}
   <div className="col-span-2 sm:col-span-1">
     <p className="text-muted">Sent to</p>
-    <p className="text-foreground font-bold">{invoice.clientEmail}</p>
+    <p className="text-foreground font-bold">{invoice.client.email}</p>
   </div>
 </div>
 

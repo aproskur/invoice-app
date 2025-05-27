@@ -15,11 +15,10 @@ export const TopBar = ({
   const openForm = useUIStore((state) => state.openForm);
 
   return (
-    <div className="flex flex-row justify-between items-center md:items-start py-6 px-4 md:px-0">
+    <div className="flex flex-row justify-between items-center md:items-start py-6 px-4 md:py-4 md:px-2">
       {/* Title + Count */}
       <div className="flex flex-col">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Invoices
+      <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">          Invoices
         </h1>
         <p className="mt-1 text-sm text-gray-600 dark:text-white">
   {totalInvoices === 0 ? (

@@ -24,6 +24,6 @@
   "@generated/*": ["./generated/*"]
 }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts",  "svgr.d.ts", "wt/seed.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts",  "svgr.d.ts", "wt/seed.ts", "prisma.config.js"],
   "exclude": ["node_modules"]
 }

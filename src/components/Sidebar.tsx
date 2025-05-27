@@ -60,16 +60,8 @@ export default function Sidebar() {
       </div>
 
       {/* === Avatar Block === */}
-      <div className="relative w-16 h-16 md:w-full md:h-20 border-l md:border-l-0 md:border-t border-gray-400 flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300 z-10">
-          <Image
-            src="/assets/image-avatar.jpg"
-            alt="User avatar"
-            width={60}
-            height={60}
-            className="object-cover"
-          />
-        </div>
+      <div className="relative w-16 h-16 md:w-full md:h-20 border-l md:border-l-0 md:border-t border-gray-700 flex items-center justify-center">
+        <UserAvatar/>
       </div>
     </aside>
   )

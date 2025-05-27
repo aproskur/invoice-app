@@ -15,6 +15,9 @@ export async function GET() {
 
   const result = invoices.map((inv) => ({
     id: inv.id,
+    invoiceNumber: inv.invoiceNumber,
+    clientId: inv.clientId, 
+    userId: inv.userId,   
     invoiceDate: inv.invoiceDate.toISOString(),
     paymentDue: inv.paymentDue.toISOString(),
     description: inv.description ?? '',
@@ -51,17 +54,125 @@ export async function GET() {
   return NextResponse.json(result);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+type InvoiceInput = {
+  invoiceDate: string;
+  paymentDue: string;
+  description?: string;
+  status: 'draft' | 'pending' | 'paid';
+  totalAmount: number;
+  clientId: string;
+  userId: string;
+  items: {
+    name: string;
+    quantity: number;
+    price: number;
+  }[];
+};
+
+function generateInvoiceNumber(): string {
+  const letters = Array.from({ length: 2 }, () =>
+    String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  ).join('');
+  const numbers = Math.floor(1000 + Math.random() * 9000);
+  return `${letters}${numbers}`; // e.g., "RT3080"
+}
+
+function buildClient(data: InvoiceInput) {
+  if (!data.clientEmail) return undefined;
+
+  return {
+    connectOrCreate: {
+      where: { email: data.clientEmail },
+      create: {
+        name: data.clientName || '',
+        email: data.clientEmail,
+        street: data.clientAddress?.street || '',
+        city: data.clientAddress?.city || '',
+        postalCode: data.clientAddress?.postCode || '',
+        country: data.clientAddress?.country || '',
+      },
+    },
+  };
+}
+
+
+function validateInvoiceInput(data: InvoiceInput): string[] {
+  const errors: string[] = [];
+  const isDraft = data.status === 'draft';
+  
+
+  if (!isDraft) {
+    if (!data.clientEmail) errors.push('Client email is required.');
+    if (!data.clientName) errors.push('Client name is required.');
+    if (!data.invoiceDate) errors.push('Invoice date is required.');
+    if (!data.paymentDue) errors.push('Payment due date is required.');
+    if (!data.items || data.items.length === 0) errors.push('At least one item is required.');
+  }
+
+  return errors;
+}
+
+
+
+export async function POST(request: NextRequest) {
+  console.log("🔥 POST /api/invoices called");
+
+  const HARDCODED_USER_ID = 'cmb6m322b0000yi6s4ef5uq1t';
 
   try {
-    await prisma.invoice.delete({
-      where: { id },
+    const data = await request.json();
+    
+    console.log('✅ Parsed JSON:', data);
+    console.log('📧 clientEmail:', data.clientEmail);
+
+    const isDraft = data.mode === 'draft';
+const errors = isDraft ? [] : validateInvoiceInput(data);
+    if (errors.length > 0) {
+      return NextResponse.json({ errors }, { status: 400 });
+    }
+    const clientData = buildClient(data);
+    const invoice = await prisma.invoice.create({
+      data: {
+        invoiceNumber: generateInvoiceNumber(),
+        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : new Date(),
+        paymentDue: data.paymentDue ? new Date(data.paymentDue) : new Date(),
+        description: data.description ?? '',
+        status: data.status,
+        totalAmount: data.totalAmount ?? 0,
+
+        user: {
+          connect: { id: HARDCODED_USER_ID },
+        },
+
+        ...(clientData ? { client: clientData } : {}),
+
+      items: {
+  create: Array.isArray(data.items)
+    ? data.items
+        .filter(item => item?.name && item?.quantity && item?.price)
+        .map(item => ({
+          description: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.quantity * item.price,
+        }))
+    : [],
+}
+
+      },
+      include: {
+        client: true,
+        user: true,
+        items: true,
+      },
     });
 
-    return NextResponse.json({ message: 'Invoice deleted' }, { status: 200 });
+    return NextResponse.json(invoice, { status: 201 });
   } catch (error) {
-    console.error('Delete failed:', error);
-    return NextResponse.json({ error: 'Failed to delete invoice' }, { status: 500 });
+    console.error('❌ Create failed:', error);
+    return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });
   }
 }
+
+
+

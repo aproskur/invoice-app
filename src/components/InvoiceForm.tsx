@@ -7,6 +7,7 @@ import { useUIStore } from "@/store/uiStore";
 import CalendarIcon from "@/assets/icon-calendar.svg";
 import ArrowDownIcon from "@/assets/icon-arrow-down.svg";
 import DeleteIcon from "@/assets/icon-delete.svg";
+import { useRouter } from 'next/navigation';
 
 
 
@@ -16,20 +17,80 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
   const closeForm = useUIStore((state) => state.closeForm);
   const draft = useInvoiceStore((state) => state.draft);
 
-  const [form, setForm] = useState<InvoiceInput>(
-    draft ||
-    invoice || {
-      description: "",
-      status: "draft",
-      invoiceDate: "",
-      paymentDue: "",
-      clientName: "",
-      clientEmail: "",
-      senderAddress: { street: "", city: "", postCode: "", country: "" },
-      clientAddress: { street: "", city: "", postCode: "", country: "" },
-      items: [],
+  const addInvoice = useInvoiceStore((state) => state.addInvoice);
+ const router = useRouter();
+
+const emptyInvoice: InvoiceInput = {
+  invoiceNumber: "",
+  description: "",
+  status: "draft",
+  invoiceDate: "",
+  paymentDue: "",
+  clientName: "",
+  clientEmail: "",
+  senderAddress: { street: "", city: "", postCode: "", country: "" },
+  clientAddress: { street: "", city: "", postCode: "", country: "" },
+  items: [],
+};
+
+const [form, setForm] = useState<InvoiceInput>(
+  draft || (invoice ? { ...emptyInvoice, ...invoice } : emptyInvoice)
+);
+
+
+
+  const handleSaveDraft = async () => {
+    const draftData: InvoiceInput = {
+      invoiceDate: new Date().toISOString(),
+      paymentDue: new Date().toISOString(),
+      description: form.description ?? '',
+      status: 'draft',
+      totalAmount: calculateTotal(form.items),
+      clientId: form.clientId ?? '', // fallback if optional
+      userId: form.userId ?? '',     // fallback if optional
+      items: form.items ?? [],
+      clientName: form.clientName ?? '',
+      clientEmail: form.clientEmail ?? '',
+      clientAddress: form.clientAddress ?? {
+        street: '',
+        city: '',
+        postCode: '',
+        country: '',
+      },
+      senderAddress: form.senderAddress ?? {
+        street: '',
+        city: '',
+        postCode: '',
+        country: '',
+      },
+      mode: 'draft', // tells backend to relax validation
+    };
+  
+    try {
+      const res = await fetch('/api/invoices', {
+        method: 'POST',
+        body: JSON.stringify(draftData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!res.ok) {
+        throw new Error('Failed to save draft');
+      }
+  
+      const newInvoice = await res.json();
+      addInvoice(newInvoice);
+      router.push('/');
+    } catch (err) {
+      console.error(err);
+      alert('Could not save draft.');
     }
-  );
+  };
+  
+  
+  const calculateTotal = (items: InvoiceInput['items']) =>
+    items.reduce((sum, item) => sum + item.quantity * item.price, 0);
 
   useEffect(() => {
     setDraft(form);
@@ -59,16 +120,49 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
     setForm((prev) => ({ ...prev, items: updatedItems }));
   };
 
+  /*
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     clearDraft();
     onSubmit(form);
-  };
+  }; */
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  clearDraft();
+
+  const endpoint =
+    mode === "create"
+      ? "/api/invoices"
+      : `/api/invoices/${form.invoiceId}`;
+
+  const method = mode === "create" ? "POST" : "PATCH";
+
+  try {
+    const res = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form), // now form is from state
+    });
+
+    if (!res.ok) throw new Error("Failed to save invoice");
+
+    const saved = await res.json();
+    addInvoice(saved);
+    closeForm();
+    router.push("/");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to submit invoice");
+  }
+};
+
+
 
   return (
     <form onSubmit={handleSubmit} className="dark:bg-background space-y-6 rounded-xl">
       <h2 className="text-2xl font-bold">
-        {mode === "edit" ? `Edit #${invoice?.id}` : "New Invoice"}
+        {mode === "edit" ? `Edit #${invoice?.invoiceNumber}` : "New Invoice"}
       </h2>
       <h3 className="text-primary font-bold">Bill From</h3>
 
@@ -393,6 +487,7 @@ export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: Invoi
   <div className="flex gap-4">
     {mode === "create" && (
       <button
+      onClick={handleSaveDraft}
         type="submit"
         className="px-4 py-2 rounded-full bg-black text-gray-200 text-sm font-medium"
       >

@@ -43,7 +43,7 @@ export default function InvoicePreview({ invoice, onClick }: InvoicePreviewProps
       <div className="sm:hidden">
         <div className="flex justify-between">
           <span className="text-sm font-bold text-gray-800 dark:text-white">
-            #{invoice.id}
+            #{invoice.invoiceNumber}
           </span>
           <span className="text-sm text-gray-500 dark:text-gray-300">
             {invoice.client?.name}
@@ -63,7 +63,7 @@ export default function InvoicePreview({ invoice, onClick }: InvoicePreviewProps
           <div>
           <span
   className={cn(
-    'flex items-center justify-center w-[104px] px-4 py-2 rounded-md text-sm font-semibold',
+    'flex items-center justify-center w-[130px] px-4 py-2 rounded-md text-sm font-semibold',
     statusStyles[invoice.status].bg,
     statusStyles[invoice.status].text
   )}
@@ -88,7 +88,7 @@ export default function InvoicePreview({ invoice, onClick }: InvoicePreviewProps
   {/* Desktop layout */}
 <div className="hidden sm:grid w-full grid-cols-[120px_160px_1fr_150px_150px_30px] items-center gap-4">
   <span className="text-sm font-bold text-gray-800 dark:text-white">
-    #{invoice.id}
+    #{invoice.invoiceNumber}
   </span>
   <span className="text-sm text-gray-500 dark:text-gray-300">
     Due {formattedDate}
@@ -101,7 +101,7 @@ export default function InvoicePreview({ invoice, onClick }: InvoicePreviewProps
   </span>
   <span
   className={cn(
-    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-md justify-center w-[140px]',
+    'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-md justify-center  w-[140px]',
     statusStyles[invoice.status].bg,
     statusStyles[invoice.status].text
   )}

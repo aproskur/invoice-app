@@ -1,11 +1,15 @@
 export type Invoice = {
   id: string;
+  invoiceNumber: string,
   description: string;
   status: 'paid' | 'pending' | 'draft';
   invoiceDate: string;
   paymentDue: string;
   senderAddress: Address;
   clientAddress: Address;
+  userId: string;
+clientId: string;
+
   client: {
     name: string;
     email: string;
@@ -40,19 +44,29 @@ export type Invoice = {
     name: string;
     quantity: number;
     price: number;
+    userId: string;
+clientId: string;
+
   };
   
-  export type InvoiceInput = {
-    description: string;
-    status: 'paid' | 'pending' | 'draft';
-    invoiceDate: string;
-    paymentDue: string;
-    clientName: string;
-    clientEmail: string;
-    senderAddress: Address;
-    clientAddress: Address;
-    items: InvoiceItemInput[]; 
-  };
+
+
+export type InvoiceInput = {
+  mode?: 'draft' | 'send'; 
+  description?: string;
+  status: 'paid' | 'pending' | 'draft';
+  invoiceDate: string;
+  paymentDue: string;
+  clientName?: string;
+  clientEmail?: string;
+  senderAddress?: Address;
+  clientAddress?: Address;
+  items: InvoiceItemInput[];
+  userId?: string;
+  clientId?: string;
+  totalAmount?: number;
+};
+
   
   
   
