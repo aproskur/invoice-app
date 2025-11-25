@@ -7,11 +7,17 @@ import UserAvatar from './UserAvatar';
 
 
 export default function Sidebar() {
+  // default to light; honor stored preference and system preference
   const [darkMode, setDarkMode] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('theme')
-    setDarkMode(stored === 'dark')
+    if (stored) {
+      setDarkMode(stored === 'dark')
+    } else {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      setDarkMode(prefersDark)
+    }
   }, [])
   
   useEffect(() => {

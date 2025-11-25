@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { PrismaClient } from '@generated/prisma';
+import { prisma } from '@/lib/prisma';
+import { PaymentTerms } from '@generated/prisma';
+import { normalizeItems, calculateTotalAmount } from '@/lib/invoiceTotals';
 
-const prisma = new PrismaClient();
 
 
 export async function GET() {
@@ -23,12 +24,12 @@ export async function GET() {
     description: inv.description ?? '',
     status: inv.status,
     client: {
-      name: inv.client.name,
-      email: inv.client.email,
-      street: inv.client.street ?? '',
-      city: inv.client.city ?? '',
-      postCode: inv.client.postalCode ?? '',
-      country: inv.client.country ?? '',
+      name: inv.client?.name ?? '',
+      email: inv.client?.email ?? '',
+      street: inv.client?.street ?? '',
+      city: inv.client?.city ?? '',
+      postCode: inv.client?.postalCode ?? '',
+      country: inv.client?.country ?? '',
     },
     totalAmount: inv.totalAmount,
     senderAddress: {
@@ -38,10 +39,10 @@ export async function GET() {
       country: inv.user.country ?? '',
     },
     clientAddress: {
-      street: inv.client.street ?? '',
-      city: inv.client.city ?? '',
-      postCode: inv.client.postalCode ?? '',
-      country: inv.client.country ?? '',
+      street: inv.client?.street ?? '',
+      city: inv.client?.city ?? '',
+      postCode: inv.client?.postalCode ?? '',
+      country: inv.client?.country ?? '',
     },
     items: inv.items.map((item) => ({
       name: item.description,
@@ -54,19 +55,52 @@ export async function GET() {
   return NextResponse.json(result);
 }
 
+type AddressInput = {
+  street?: string;
+  city?: string;
+  postCode?: string;
+  country?: string;
+};
+
 type InvoiceInput = {
-  invoiceDate: string;
-  paymentDue: string;
+  invoiceNumber?: string;
+  mode?: 'draft' | 'send';
   description?: string;
   status: 'draft' | 'pending' | 'paid';
-  totalAmount: number;
-  clientId: string;
-  userId: string;
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
+  invoiceDate?: string;
+  paymentDue?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientAddress?: AddressInput;
+  senderAddress?: AddressInput;
+  totalAmount?: number;
+  clientId?: string;
+  userId?: string;
+  items?: {
+    name?: string;
+    quantity?: number;
+    price?: number;
   }[];
+  paymentTerms?: string;
+};
+
+const DEFAULT_USER_EMAIL = 'trigonotarb@am.am';
+
+const mapPaymentTerms = (value?: string): PaymentTerms => {
+  if (!value) return PaymentTerms.NET_30;
+  const normalized = value.toUpperCase().replace(/\s+/g, '_');
+  switch (normalized) {
+    case 'NET_7':
+      return PaymentTerms.NET_7;
+    case 'NET_14':
+      return PaymentTerms.NET_14;
+    case 'NET_30':
+      return PaymentTerms.NET_30;
+    case 'DUE_ON_RECEIPT':
+      return PaymentTerms.DUE_ON_RECEIPT;
+    default:
+      return PaymentTerms.NET_30;
+  }
 };
 
 function generateInvoiceNumber(): string {
@@ -117,7 +151,22 @@ function validateInvoiceInput(data: InvoiceInput): string[] {
 export async function POST(request: NextRequest) {
   console.log("🔥 POST /api/invoices called");
 
-  const HARDCODED_USER_ID = 'cmb6m322b0000yi6s4ef5uq1t';
+async function ensureDefaultUser() {
+  const user = await prisma.user.upsert({
+    where: { email: DEFAULT_USER_EMAIL },
+    update: {},
+    create: {
+      email: DEFAULT_USER_EMAIL,
+      name: 'Demo User',
+      street: '',
+      city: '',
+      postalCode: '',
+      country: '',
+      photoUrl: '',
+    },
+  });
+  return user;
+}
 
   try {
     const data = await request.json();
@@ -131,33 +180,33 @@ const errors = isDraft ? [] : validateInvoiceInput(data);
       return NextResponse.json({ errors }, { status: 400 });
     }
     const clientData = buildClient(data);
+    const normalizedItems = normalizeItems(data.items);
+    const totalAmount = calculateTotalAmount(normalizedItems);
+    const defaultUser = await ensureDefaultUser();
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber: generateInvoiceNumber(),
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : new Date(),
         paymentDue: data.paymentDue ? new Date(data.paymentDue) : new Date(),
+        paymentTerms: mapPaymentTerms(data.paymentTerms),
         description: data.description ?? '',
         status: data.status,
-        totalAmount: data.totalAmount ?? 0,
+        totalAmount,
 
         user: {
-          connect: { id: HARDCODED_USER_ID },
+          connect: { id: defaultUser.id },
         },
 
         ...(clientData ? { client: clientData } : {}),
 
       items: {
-  create: Array.isArray(data.items)
-    ? data.items
-        .filter(item => item?.name && item?.quantity && item?.price)
-        .map(item => ({
+        create: normalizedItems.map((item) => ({
           description: item.name,
           quantity: item.quantity,
           unitPrice: item.price,
           totalPrice: item.quantity * item.price,
-        }))
-    : [],
-}
+        })),
+      }
 
       },
       include: {
@@ -173,6 +222,3 @@ const errors = isDraft ? [] : validateInvoiceInput(data);
     return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });
   }
 }
-
-
-

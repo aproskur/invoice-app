@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import ClientLayoutWrapper from '@/components/ClientLayoutWrapper';
 
 
 
@@ -20,18 +22,20 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children: ReactNode;
+}>)
+
+
+{
+ 
   return (
 
     <html lang="en">
-   <body className={`${spartan.variable} antialiased bg-[var(--color-background)] text-[var(--color-foreground)] transition-colors`}>
-  <div className="flex flex-col md:flex-row min-h-screen">
-    <Sidebar />
-    <main className="flex-1">{children}</main>
-  </div>
-</body>
-
+      <body className={`${spartan.variable} antialiased bg-[var(--color-background)] text-[var(--color-foreground)] transition-colors`}>
+        <ClientLayoutWrapper>
+          {children}
+        </ClientLayoutWrapper>
+      </body>
     </html>
 
   );

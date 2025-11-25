@@ -18,7 +18,7 @@ const colorNames = [
         {colorNames.map((name) => (
           <div key={name} className="flex flex-col items-center text-sm">
             <div
-              className={`w-16 h-16 rounded shadow-md bg-${name}`}
+              className="w-16 h-16 rounded shadow-md border"
               style={{ backgroundColor: `hsl(var(--${name}-hsl))` }}
             />
             <span className="mt-2">{name}</span>

@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { InvoiceFormProps, InvoiceItemInput, InvoiceInput } from "@/types/invoice";
+import { InvoiceFormProps, InvoiceItemInput, InvoiceInput, Invoice } from "@/types/invoice";
 import { useInvoiceStore } from "@/store/invoiceStore";
 import { useUIStore } from "@/store/uiStore";
-import CalendarIcon from "@/assets/icon-calendar.svg";
-import ArrowDownIcon from "@/assets/icon-arrow-down.svg";
 import DeleteIcon from "@/assets/icon-delete.svg";
 import { useRouter } from 'next/navigation';
 
@@ -33,8 +31,82 @@ const emptyInvoice: InvoiceInput = {
   items: [],
 };
 
-const [form, setForm] = useState<InvoiceInput>(
-  draft || (invoice ? { ...emptyInvoice, ...invoice } : emptyInvoice)
+const formatDateForInput = (value?: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value.split("T")[0] ?? "";
+  }
+  return date.toISOString().split("T")[0] ?? "";
+};
+
+const normalizeInvoiceInput = (source?: InvoiceInput | Invoice | null): InvoiceInput => {
+  const base: InvoiceInput = {
+    ...emptyInvoice,
+    senderAddress: { ...emptyInvoice.senderAddress },
+    clientAddress: { ...emptyInvoice.clientAddress },
+    items: [],
+  };
+
+  if (!source) return base;
+
+  const items = Array.isArray(source.items)
+    ? source.items.map((item) => ({
+        name: item.name ?? "",
+        quantity: Number(item.quantity ?? 0),
+        price: Number(item.price ?? 0),
+        id: (item as InvoiceItemInput).id,
+        invoiceId: (item as InvoiceItemInput).invoiceId,
+      }))
+    : [];
+
+  const isInvoice = (value: InvoiceInput | Invoice): value is Invoice =>
+    (value as Invoice).client !== undefined;
+
+  const clientName =
+    'clientName' in source && source.clientName !== undefined
+      ? source.clientName ?? ""
+      : isInvoice(source)
+        ? source.client?.name ?? ""
+        : "";
+
+  const clientEmail =
+    'clientEmail' in source && source.clientEmail !== undefined
+      ? source.clientEmail ?? ""
+      : isInvoice(source)
+        ? source.client?.email ?? ""
+        : "";
+
+  const normalized: InvoiceInput = {
+    ...base,
+    invoiceNumber: source.invoiceNumber ?? base.invoiceNumber,
+    description: source.description ?? "",
+    status: (source.status as InvoiceInput['status']) ?? base.status,
+    invoiceDate: formatDateForInput(source.invoiceDate),
+    paymentDue: formatDateForInput(source.paymentDue),
+    clientName,
+    clientEmail,
+    senderAddress: {
+      ...base.senderAddress,
+      ...(source.senderAddress ?? {}),
+    },
+    clientAddress: {
+      ...base.clientAddress,
+      ...(source.clientAddress ?? {}),
+    },
+    items,
+    userId: 'userId' in source ? source.userId : base.userId,
+    clientId: 'clientId' in source ? source.clientId : base.clientId,
+    totalAmount: 'totalAmount' in source ? source.totalAmount : base.totalAmount,
+    paymentTerms: 'paymentTerms' in source ? source.paymentTerms : base.paymentTerms,
+    mode: 'mode' in source ? source.mode : base.mode,
+  };
+
+  return normalized;
+};
+
+const [form, setForm] = useState<InvoiceInput>(() =>
+  draft ? normalizeInvoiceInput(draft) : normalizeInvoiceInput(invoice)
 );
 
 
@@ -79,8 +151,10 @@ const [form, setForm] = useState<InvoiceInput>(
         throw new Error('Failed to save draft');
       }
   
-      const newInvoice = await res.json();
+      const newInvoice: Invoice = await res.json();
       addInvoice(newInvoice);
+      closeForm();
+      onSubmit?.(newInvoice);
       router.push('/');
     } catch (err) {
       console.error(err);
@@ -134,7 +208,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   const endpoint =
     mode === "create"
       ? "/api/invoices"
-      : `/api/invoices/${form.invoiceId}`;
+      : `/api/invoices/${form.invoiceNumber}`;
 
   const method = mode === "create" ? "POST" : "PATCH";
 
@@ -147,10 +221,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     if (!res.ok) throw new Error("Failed to save invoice");
 
-    const saved = await res.json();
+    const saved: Invoice = await res.json();
     addInvoice(saved);
     closeForm();
     router.push("/");
+    onSubmit?.(saved);
   } catch (err) {
     console.error(err);
     alert("Failed to submit invoice");
@@ -487,8 +562,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   <div className="flex gap-4">
     {mode === "create" && (
       <button
-      onClick={handleSaveDraft}
-        type="submit"
+        onClick={handleSaveDraft}
+        type="button"
         className="px-4 py-2 rounded-full bg-black text-gray-200 text-sm font-medium"
       >
         Save as Draft

@@ -1,24 +1,41 @@
-"use client"
+'use client';
 import React from 'react';
-import type { Invoice } from '@/types/invoice';
+import { useInvoiceStore } from '@/store/invoiceStore';
+import { useUIStore } from '@/store/uiStore';
 import InvoicePreview from './InvoicePreview';
 import { useRouter } from 'next/navigation';
 
-
-
-export default function InvoiceHub({ invoices = [] }: { invoices?: Invoice[] }) {
-
+export default function InvoiceHub() {
   const router = useRouter();
+  const openForm = useUIStore((s) => s.openForm);
+  const {
+    invoices = [],
+    page,
+    totalPages,
+    loading,
+    fetchInvoices,
+  } = useInvoiceStore();
 
-  if (!Array.isArray(invoices) || invoices.length === 0) {
+  if (loading) return <p className="text-center mt-10">Loading invoices...</p>;
+
+  if (!invoices || invoices.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
+      <div className="min-h-[65vh] w-full max-w-3xl mx-auto bg-white dark:bg-panel-dark rounded-2xl flex flex-col items-center justify-center text-center px-10 md:px-16 py-16 gap-6 shadow-sm">
         <img
           src="/assets/illustration-empty.svg"
           alt="No invoices"
-          className="w-64 h-auto mb-4 mt-20"
+          className="w-64 h-auto"
         />
-        <p className="text-gray-500">No invoices yet. Create one to get started!</p>
+        <div>
+          <p className="text-xl font-semibold text-foreground">There is nothing here</p>
+          <p className="text-muted">Create an invoice by clicking the New Invoice button and get started</p>
+        </div>
+        <button
+          className="mt-2 bg-primary text-white px-4 py-2 rounded-md hover:opacity-90"
+          onClick={openForm}
+        >
+          New Invoice
+        </button>
       </div>
     );
   }
@@ -26,13 +43,21 @@ export default function InvoiceHub({ invoices = [] }: { invoices?: Invoice[] }) 
   return (
     <div className="space-y-4">
       {invoices.map((invoice) => (
-    <InvoicePreview
-    key={invoice.id}
-    invoice={invoice} 
-    onClick={() => router.push(`/invoices/${invoice.id}`)}
-  />
-  
+        <InvoicePreview
+          key={invoice.id}
+          invoice={invoice}
+          onClick={() => router.push(`/invoices/${invoice.invoiceNumber}`)}
+        />
       ))}
+      <div className="flex justify-center gap-4 mt-6">
+        <button onClick={() => fetchInvoices(page - 1)} disabled={page <= 1}>
+          Prev
+        </button>
+        <span>Page {page} of {totalPages}</span>
+        <button onClick={() => fetchInvoices(page + 1)} disabled={page >= totalPages}>
+          Next
+        </button>
+      </div>
     </div>
   );
 }

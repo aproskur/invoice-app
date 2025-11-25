@@ -15,12 +15,12 @@ export const TopBar = ({
   const openForm = useUIStore((state) => state.openForm);
 
   return (
-    <div className="flex flex-row justify-between items-center md:items-start py-6 px-4 md:py-4 md:px-2">
+    <div className="flex flex-row justify-between items-center md:items-center py-6">
       {/* Title + Count */}
       <div className="flex flex-col">
-      <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">          Invoices
+      <h1 className="text-lg sm:text-2xl font-bold text-foreground">          Invoices
         </h1>
-        <p className="mt-1 text-sm text-gray-600 dark:text-white">
+        <p className="mt-1 text-sm text-muted">
   {totalInvoices === 0 ? (
     <>
       <span className="block md:hidden">No invoices</span>
@@ -42,10 +42,10 @@ export const TopBar = ({
       </div>
 
       {/* Buttons */}
-      <div className="flex items-center space-x-3 mt-0 md:mt-4">
+      <div className="flex items-center space-x-3 mt-0 md:mt-0">
         <button
           onClick={onFilterClick}
-          className="flex items-center text-sm font-medium text-gray-700 dark:text-white hover:text-gray-900 dark:hover:text-white"
+          className="flex items-center text-sm font-medium text-foreground hover:opacity-90"
         >
           <span className="block md:hidden">Filter</span>
           <span className="hidden md:block">Filter by status</span>
@@ -53,7 +53,7 @@ export const TopBar = ({
         </button>
         <button
           onClick={openForm}
-          className="flex items-center bg-primary hover:bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-full"
+          className="flex items-center bg-primary hover:bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-full shadow-md"
         >
           <span className="inline-flex items-center justify-center w-6 h-6 bg-white rounded-full mr-2">
             <PlusIcon className="w-2 h-2 text-purple-600" />

@@ -1,20 +1,31 @@
 import { Invoice } from '@/types/invoice';
 
+const sharedSender = {
+  street: '19 Union Terrace',
+  city: 'London',
+  postCode: 'E1 3EZ',
+  country: 'United Kingdom',
+};
+
 export const allInvoices: Invoice[] = [
   {
     id: 'XM9141',
+    invoiceNumber: 'XM9141',
     description: 'Brand identity design for new product line',
     status: 'pending',
     invoiceDate: '2021-08-21T00:00:00Z',
     paymentDue: '2021-09-20T00:00:00Z',
-    clientName: 'Alex Grim',
-    clientEmail: 'alexgrim@mail.com',
-    senderAddress: {
-      street: '19 Union Terrace',
-      city: 'London',
-      postCode: 'E1 3EZ',
+    userId: 'demo-user',
+    clientId: 'client-xm9141',
+    client: {
+      name: 'Alex Grim',
+      email: 'alexgrim@mail.com',
+      street: '84 Church Way',
+      city: 'Bradford',
+      postCode: 'BD1 9PB',
       country: 'United Kingdom',
     },
+    senderAddress: sharedSender,
     clientAddress: {
       street: '84 Church Way',
       city: 'Bradford',
@@ -22,27 +33,28 @@ export const allInvoices: Invoice[] = [
       country: 'United Kingdom',
     },
     items: [
-      {
-        name: 'Logo Design',
-        quantity: 1,
-        price: 200,
-      },
-      {
-        name: 'Brand Guidelines',
-        quantity: 1,
-        price: 150,
-      },
+      { name: 'Logo Design', quantity: 1, price: 200 },
+      { name: 'Brand Guidelines', quantity: 1, price: 150 },
     ],
-    total: 350,
+    totalAmount: 350,
   },
   {
     id: 'RT3080',
+    invoiceNumber: 'RT3080',
     description: 'Website design and development',
     status: 'paid',
     invoiceDate: '2021-08-12T00:00:00Z',
     paymentDue: '2021-08-19T00:00:00Z',
-    clientName: 'Jensen Huang',
-    clientEmail: 'jensen@nvidia.com',
+    userId: 'demo-user',
+    clientId: 'client-rt3080',
+    client: {
+      name: 'Jensen Huang',
+      email: 'jensen@nvidia.com',
+      street: '100 Innovation Dr',
+      city: 'Palo Alto',
+      postCode: '94301',
+      country: 'USA',
+    },
     senderAddress: {
       street: '19 Tech Park',
       city: 'San Francisco',
@@ -56,32 +68,29 @@ export const allInvoices: Invoice[] = [
       country: 'USA',
     },
     items: [
-      {
-        name: 'UX Wireframes',
-        quantity: 2,
-        price: 300,
-      },
-      {
-        name: 'UI Design',
-        quantity: 1,
-        price: 500,
-      },
-      {
-        name: 'Development',
-        quantity: 1,
-        price: 1200,
-      },
+      { name: 'UX Wireframes', quantity: 2, price: 300 },
+      { name: 'UI Design', quantity: 1, price: 500 },
+      { name: 'Development', quantity: 1, price: 1200 },
     ],
-    total: 2300,
+    totalAmount: 2300,
   },
   {
     id: 'RG0314',
+    invoiceNumber: 'RG0314',
     description: 'Maintenance contract',
     status: 'draft',
     invoiceDate: '2021-09-01T00:00:00Z',
     paymentDue: '2021-10-01T00:00:00Z',
-    clientName: 'Sara Conway',
-    clientEmail: 'sara.conway@greenbank.org',
+    userId: 'demo-user',
+    clientId: 'client-rg0314',
+    client: {
+      name: 'Sara Conway',
+      email: 'sara.conway@greenbank.org',
+      street: '9 Banking Ln',
+      city: 'Leeds',
+      postCode: 'LS1 4AP',
+      country: 'United Kingdom',
+    },
     senderAddress: {
       street: '56 High Street',
       city: 'Cambridge',
@@ -94,13 +103,7 @@ export const allInvoices: Invoice[] = [
       postCode: 'LS1 4AP',
       country: 'United Kingdom',
     },
-    items: [
-      {
-        name: 'Server Maintenance',
-        quantity: 1,
-        price: 600,
-      },
-    ],
-    total: 600,
+    items: [{ name: 'Server Maintenance', quantity: 1, price: 600 }],
+    totalAmount: 600,
   },
 ];
