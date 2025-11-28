@@ -1,10 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PaymentTerms } from '@prisma/client';
+import { PaymentTerms, type Invoice, type Client, type User, type InvoiceItem } from '@prisma/client';
 import { normalizeItems, calculateTotalAmount } from '@/lib/invoiceTotals';
 import { formatInvoice } from '@/lib/formatInvoice';
 
-
+type InvoiceWithRelations = Invoice & {
+  client: Client | null;
+  user: User | null;
+  items: InvoiceItem[];
+};
 
 export async function GET() {
   const invoices = await prisma.invoice.findMany({
@@ -15,43 +19,8 @@ export async function GET() {
     },
   });
 
-  const result = invoices.map((inv) => ({
-    id: inv.id,
-    invoiceNumber: inv.invoiceNumber,
-    clientId: inv.clientId, 
-    userId: inv.userId,   
-    invoiceDate: inv.invoiceDate.toISOString(),
-    paymentDue: inv.paymentDue.toISOString(),
-    description: inv.description ?? '',
-    status: inv.status,
-    client: {
-      name: inv.client?.name ?? '',
-      email: inv.client?.email ?? '',
-      street: inv.client?.street ?? '',
-      city: inv.client?.city ?? '',
-      postCode: inv.client?.postalCode ?? '',
-      country: inv.client?.country ?? '',
-    },
-    totalAmount: inv.totalAmount,
-    senderAddress: {
-      street: inv.user.street ?? '',
-      city: inv.user.city ?? '',
-      postCode: inv.user.postalCode ?? '',
-      country: inv.user.country ?? '',
-    },
-    clientAddress: {
-      street: inv.client?.street ?? '',
-      city: inv.client?.city ?? '',
-      postCode: inv.client?.postalCode ?? '',
-      country: inv.client?.country ?? '',
-    },
-    items: inv.items.map((item) => ({
-      name: item.description,
-      quantity: item.quantity,
-      price: item.unitPrice,
-    })),
-  }));
-  
+  const typed = invoices as InvoiceWithRelations[];
+  const result = typed.map(formatInvoice);
 
   return NextResponse.json(result);
 }
