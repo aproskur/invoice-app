@@ -20,8 +20,7 @@
       }
     ],
    "paths": {
-  "@/*": ["./src/*"],
-  "@generated/*": ["./generated/*"]
+  "@/*": ["./src/*"]
 }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts",  "svgr.d.ts", "wt/seed.ts", "prisma.config.js"],

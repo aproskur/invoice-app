@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 
 
-export default function InvoiceForm({ invoice, mode, onCancel, onSubmit }: InvoiceFormProps) {
+export default function InvoiceForm({ invoice, mode, onCancel, onSubmit, invoiceNumberOverride }: InvoiceFormProps) {
   const { setDraft, clearDraft } = useInvoiceStore();
   const showForm = useUIStore((state) => state.showForm);
   const closeForm = useUIStore((state) => state.closeForm);
@@ -205,21 +205,49 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   clearDraft();
 
+  const targetInvoiceNumber = invoiceNumberOverride || invoice?.invoiceNumber || form.invoiceNumber;
   const endpoint =
     mode === "create"
       ? "/api/invoices"
-      : `/api/invoices/${form.invoiceNumber}`;
+      : targetInvoiceNumber
+        ? `/api/invoices/${targetInvoiceNumber}`
+        : null;
 
   const method = mode === "create" ? "POST" : "PATCH";
 
+  if (mode === "edit" && !endpoint) {
+    alert("Missing invoice number for update.");
+    return;
+  }
+
   try {
-    const res = await fetch(endpoint, {
+    const payload: InvoiceInput = {
+      ...form,
+      invoiceNumber: targetInvoiceNumber ?? form.invoiceNumber,
+      items: form.items.map((item) => ({
+        ...item,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      })),
+    };
+
+    const res = await fetch(endpoint as string, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form), // now form is from state
+      body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("Failed to save invoice");
+    if (!res.ok) {
+      let message = "Failed to save invoice";
+      try {
+        const err = await res.json();
+        if (err?.error) message = err.error;
+        if (Array.isArray(err?.errors)) message = err.errors.join(", ");
+      } catch (e) {
+        // ignore parse error
+      }
+      throw new Error(message);
+    }
 
     const saved: Invoice = await res.json();
     addInvoice(saved);

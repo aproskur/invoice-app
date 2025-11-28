@@ -14,21 +14,10 @@ export async function GET(req: NextRequest) {
         skip,
         take: limit,
         orderBy: { invoiceDate: 'desc' },
-        select: {
-          id: true,
-          invoiceNumber: true,
-          description: true,
-          status: true,
-          invoiceDate: true,
-          paymentDue: true,
-          totalAmount: true,
-          clientId: true,
-          userId: true,
-          client: {
-            select: {
-              name: true,
-            },
-          },
+        include: {
+          client: true,
+          user: true,
+          items: true,
         },
       }),
       prisma.invoice.count(),

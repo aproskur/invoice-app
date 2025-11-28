@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Invoice, InvoiceInput } from '@/types/invoice';
+import { error } from 'console';
 
 type State = {
   invoices: Invoice[];
@@ -19,6 +20,8 @@ type State = {
   clearDraft: () => void;
 
   fetchInvoices: (page: number, limit?: number) => Promise<void>;
+
+  markInvoicePaid: (invoiceNumber: string) => Promise<void>;
 };
 
 export const useInvoiceStore = create<State>((set) => ({
@@ -53,33 +56,67 @@ export const useInvoiceStore = create<State>((set) => ({
   setDraft: (data) => set({ draft: data }),
   clearDraft: () => set({ draft: null }),
 
- fetchInvoices: async (page: number, limit = 8) => {
-  const { totalPages } = useInvoiceStore.getState();
-  const clampedPage = Math.min(Math.max(page, 1), Math.max(totalPages, 1));
+  fetchInvoices: async (page: number, limit = 8) => {
+    const { totalPages } = useInvoiceStore.getState();
+    const clampedPage = Math.min(Math.max(page, 1), Math.max(totalPages, 1));
 
-  set({ loading: true, error: null });
+    set({ loading: true, error: null });
 
-  try {
-    const res = await fetch(`/api/invoices/paginated?page=${clampedPage}&limit=${limit}`);
+    try {
+      const res = await fetch(
+        `/api/invoices/paginated?page=${clampedPage}&limit=${limit}`
+      );
 
-    if (!res.ok) {
-      throw new Error(`Request failed with status ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      set({
+        invoices: Array.isArray(data.invoices) ? data.invoices : [],
+        page: typeof data.page === 'number' ? data.page : clampedPage,
+        totalPages: typeof data.totalPages === 'number' ? data.totalPages : 1,
+        totalInvoices:
+          typeof data.totalInvoices === 'number' ? data.totalInvoices : 0,
+        loading: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error);
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
+  },
 
-    const data = await res.json();
+  markInvoicePaid: async (invoiceNumber: string) => {
+    set({ loading: true, error: null });
 
-    set({
-      invoices: Array.isArray(data.invoices) ? data.invoices : [],
-      page: typeof data.page === 'number' ? data.page : clampedPage,
-      totalPages: typeof data.totalPages === 'number' ? data.totalPages : 1,
-      totalInvoices: typeof data.totalInvoices === 'number' ? data.totalInvoices : 0,
-      loading: false,
-      error: null,
-    });
-  } catch (error) {
-    console.error('Failed to fetch invoices:', error);
-    set({ loading: false, error: error instanceof Error ? error.message : 'Unknown error' });
-  }
-}
+    try {
+      const res = await fetch(`/api/invoices/${invoiceNumber}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'paid' }),
+      });
 
+      if (!res.ok) throw new Error('Failed to update');
+      const updatedInvoice = await res.json();
+
+      set((state) => ({
+        invoices: state.invoices.map((inv) =>
+          inv.invoiceNumber === invoiceNumber || inv.id === invoiceNumber
+            ? updatedInvoice
+            : inv
+        ),
+        loading: false,
+      }));
+    } catch (err) {
+      set({
+        loading: false,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
+    }
+  },
 }));

@@ -3,7 +3,7 @@ export const runtime = 'nodejs';
 
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PaymentTerms } from '@generated/prisma';
+import { PaymentTerms } from '@prisma/client';
 import { normalizeItems, calculateTotalAmount } from '@/lib/invoiceTotals';
 import { formatInvoice } from '@/lib/formatInvoice';
 
@@ -40,8 +40,11 @@ const shouldUpdateClient = (data: InvoiceUpdateInput) =>
       data.clientAddress?.country,
   );
 
-const buildClientMutation = (data: InvoiceUpdateInput, hasExistingClient: boolean) => {
+const buildClientMutation = (data: InvoiceUpdateInput, hasExistingClient: boolean, invoiceNumber: string) => {
   if (!shouldUpdateClient(data)) return undefined;
+
+  // allow creating a client even if email is missing by using a placeholder per invoice
+  const fallbackEmail = `${invoiceNumber.toLowerCase()}@placeholder.local`;
 
   const update = {
     ...(data.clientName !== undefined ? { name: data.clientName } : {}),
@@ -56,7 +59,7 @@ const buildClientMutation = (data: InvoiceUpdateInput, hasExistingClient: boolea
 
   const createPayload = {
     name: data.clientName || '',
-    email: data.clientEmail ?? '',
+    email: data.clientEmail ?? fallbackEmail,
     street: data.clientAddress?.street || '',
     city: data.clientAddress?.city || '',
     postalCode: data.clientAddress?.postCode || '',
@@ -106,9 +109,10 @@ const mapPaymentTerms = (value?: string): PaymentTerms | undefined => {
 };
 
 // GET one
-export async function GET(_req: NextRequest, { params }: { params: { invoiceNumber: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ invoiceNumber: string }> }) {
+  const { invoiceNumber } = await params;
   const inv = await prisma.invoice.findUnique({
-    where: { invoiceNumber: params.invoiceNumber },
+    where: { invoiceNumber: invoiceNumber },
     include: { client: true, user: true, items: true },
   });
   if (!inv) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -116,18 +120,31 @@ export async function GET(_req: NextRequest, { params }: { params: { invoiceNumb
 }
 
 // DELETE
-export async function DELETE(_req: NextRequest, { params }: { params: { invoiceNumber: string } }) {
-  const inv = await prisma.invoice.findUnique({ where: { invoiceNumber: params.invoiceNumber } });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ invoiceNumber: string }> }) {
+  const { invoiceNumber } = await params;
+  const inv = await prisma.invoice.findUnique({ where: { invoiceNumber: invoiceNumber } });
   if (!inv) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  await prisma.invoice.delete({ where: { invoiceNumber: params.invoiceNumber } });
+  await prisma.invoice.delete({ where: { invoiceNumber: invoiceNumber } });
   return NextResponse.json({ ok: true });
 }
 
-// PATCH (optional)
-export async function PATCH(req: NextRequest, { params }: { params: { invoiceNumber: string } }) {
+// PATCH 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ invoiceNumber: string }> }) {
   const data: InvoiceUpdateInput = await req.json();
+  const { invoiceNumber } = await params;
+
+  const parsedInvoiceDate = data.invoiceDate ? new Date(data.invoiceDate) : undefined;
+  const parsedPaymentDue = data.paymentDue ? new Date(data.paymentDue) : undefined;
+
+  if (
+    (parsedInvoiceDate && Number.isNaN(parsedInvoiceDate.getTime())) ||
+    (parsedPaymentDue && Number.isNaN(parsedPaymentDue.getTime()))
+  ) {
+    return NextResponse.json({ error: 'Invalid date provided' }, { status: 400 });
+  }
+
   const existingInvoice = await prisma.invoice.findUnique({
-    where: { invoiceNumber: params.invoiceNumber },
+    where: { invoiceNumber: invoiceNumber },
     select: { clientId: true },
   });
 
@@ -138,15 +155,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { invoiceNum
   const shouldUpdateItems = Array.isArray(data.items);
   const normalizedItems = shouldUpdateItems ? normalizeItems(data.items) : [];
   const recalculatedTotal = shouldUpdateItems ? calculateTotalAmount(normalizedItems) : undefined;
-  const clientMutation = buildClientMutation(data, Boolean(existingInvoice.clientId));
+  const clientMutation = buildClientMutation(data, Boolean(existingInvoice.clientId), invoiceNumber);
 
   const updated = await prisma.invoice.update({
-    where: { invoiceNumber: params.invoiceNumber },
+    where: { invoiceNumber: invoiceNumber },
     data: {
       description: data.description ?? undefined,
       status: data.status ?? undefined,
-      invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : undefined,
-      paymentDue: data.paymentDue ? new Date(data.paymentDue) : undefined,
+      invoiceDate: parsedInvoiceDate,
+      paymentDue: parsedPaymentDue,
       paymentTerms: mapPaymentTerms(data.paymentTerms),
       totalAmount: typeof recalculatedTotal === 'number' ? recalculatedTotal : undefined,
       client: clientMutation,

@@ -11,6 +11,8 @@ type UserProfile = {
 export default function UserAvatar() {
   const [user, setUser] = useState<UserProfile | null>(null);
 
+
+
   useEffect(() => {
     let active = true;
 
@@ -40,16 +42,14 @@ export default function UserAvatar() {
   const avatarSrc =
     typeof user?.photoUrl === 'string' && user.photoUrl.trim().length > 0
       ? user.photoUrl
-      : '/default-avatar.jpg';
+      : '/assets/trigonotarb.webp';
 
   return (
     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-300 z-10">
       <img
         src={avatarSrc}
         alt={user?.name ? `${user.name} avatar` : 'User avatar'}
-        width={60}
-        height={60}
-        className="object-cover"
+        className="w-full h-full object-cover"
       />
     </div>
   );

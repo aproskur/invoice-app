@@ -14,6 +14,7 @@ export default function InvoiceView({ invoice }: Props) {
   const openForm = useUIStore((s) => s.openForm);
   const setDraft = useInvoiceStore((s) => s.setDraft);
   const removeInvoice = useInvoiceStore((s) => s.removeInvoice);
+  const markPaid = useInvoiceStore((s) => s.markInvoicePaid);
   const { previewMode } = usePreview();
 
   // helpers
@@ -64,6 +65,10 @@ export default function InvoiceView({ invoice }: Props) {
     }
   };
 
+  
+
+  const handleMarkPaid = () => markPaid(invoice.invoiceNumber);
+
 // keep  statusStyles object as-is
 const statusStyles = {
   paid:   { bg: 'bg-green-100',  text: 'text-green-700',  dot: 'bg-green-700' },
@@ -105,7 +110,7 @@ const st = statusStyles[statusKey];
             <button onClick={handleDelete} className="bg-danger text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
               Delete
             </button>
-            <button className="bg-primary text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
+            <button onClick={handleMarkPaid} className="bg-primary text-white text-sm px-4 py-2 rounded-full hover:opacity-90">
               Mark as Paid
             </button>
           </div>

@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PaymentTerms } from '@generated/prisma';
+import { PaymentTerms } from '@prisma/client';
 import { normalizeItems, calculateTotalAmount } from '@/lib/invoiceTotals';
+import { formatInvoice } from '@/lib/formatInvoice';
 
 
 
@@ -216,7 +217,7 @@ const errors = isDraft ? [] : validateInvoiceInput(data);
       },
     });
 
-    return NextResponse.json(invoice, { status: 201 });
+    return NextResponse.json(formatInvoice(invoice as any), { status: 201 });
   } catch (error) {
     console.error('❌ Create failed:', error);
     return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });

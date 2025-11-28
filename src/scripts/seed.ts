@@ -1,4 +1,4 @@
-import { PrismaClient, PaymentTerms, InvoiceStatus } from '../../generated/prisma'
+import { PrismaClient, PaymentTerms, InvoiceStatus } from '@prisma/client'
 
 const prisma = new PrismaClient()
 

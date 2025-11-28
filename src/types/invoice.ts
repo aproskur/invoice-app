@@ -41,6 +41,7 @@ export type InvoiceFormProps = {
   mode: 'edit' | 'create';
   onCancel: () => void;
   onSubmit?: (data: Invoice) => void;
+  invoiceNumberOverride?: string;
 };
 
 export type InvoiceItemInput = {
