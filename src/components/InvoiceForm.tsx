@@ -231,19 +231,41 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       })),
     };
 
+    // Avoid sending empty strings for date/client fields that cause server validation errors
+    const cleanedPayload: InvoiceInput = {
+      ...payload,
+      invoiceDate: payload.invoiceDate ? payload.invoiceDate : undefined,
+      paymentDue: payload.paymentDue ? payload.paymentDue : undefined,
+      clientName: payload.clientName?.trim() ? payload.clientName : undefined,
+      clientEmail: payload.clientEmail?.trim() ? payload.clientEmail : undefined,
+      clientAddress: payload.clientAddress
+        ? {
+            street: payload.clientAddress.street?.trim() || undefined,
+            city: payload.clientAddress.city?.trim() || undefined,
+            postCode: payload.clientAddress.postCode?.trim() || undefined,
+            country: payload.clientAddress.country?.trim() || undefined,
+          }
+        : undefined,
+    };
+
     const res = await fetch(endpoint as string, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(cleanedPayload),
     });
 
     if (!res.ok) {
-      let message = "Failed to save invoice";
+      let message = `Failed to save invoice (status ${res.status})`;
       try {
-        const err = await res.json();
-        if (err?.error) message = err.error;
-        if (Array.isArray(err?.errors)) message = err.errors.join(", ");
-      } catch (e) {
+        const errText = await res.text();
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson?.error) message = errJson.error;
+          if (Array.isArray(errJson?.errors)) message = errJson.errors.join(", ");
+        } catch {
+          if (errText) message = errText;
+        }
+      } catch {
         // ignore parse error
       }
       throw new Error(message);

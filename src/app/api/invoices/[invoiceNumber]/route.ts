@@ -67,27 +67,16 @@ const buildClientMutation = (data: InvoiceUpdateInput, hasExistingClient: boolea
   };
 
   if (!hasExistingClient) {
-    if (!createPayload.email) {
-      return undefined;
-    }
-
+    // no client attached yet: connect or create by email
     return {
-      upsert: {
-        update,
+      connectOrCreate: {
+        where: { email: createPayload.email },
         create: createPayload,
       },
     } as const;
   }
 
-  if (data.clientEmail) {
-    return {
-      upsert: {
-        update,
-        create: createPayload,
-      },
-    } as const;
-  }
-
+  // existing client attached: just update fields
   return { update } as const;
 };
 

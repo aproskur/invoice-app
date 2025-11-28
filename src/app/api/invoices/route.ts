@@ -112,15 +112,26 @@ function generateInvoiceNumber(): string {
   return `${letters}${numbers}`; // e.g., "RT3080"
 }
 
-function buildClient(data: InvoiceInput) {
-  if (!data.clientEmail) return undefined;
+function buildClient(data: InvoiceInput, invoiceNumber: string) {
+  // If no client data at all, skip
+  const hasSomeClientInfo =
+    data.clientEmail ||
+    data.clientName ||
+    data.clientAddress?.street ||
+    data.clientAddress?.city ||
+    data.clientAddress?.postCode ||
+    data.clientAddress?.country;
+  if (!hasSomeClientInfo) return undefined;
+
+  const fallbackEmail = `${invoiceNumber.toLowerCase()}@placeholder.local`;
+  const email = data.clientEmail || fallbackEmail;
 
   return {
     connectOrCreate: {
-      where: { email: data.clientEmail },
+      where: { email },
       create: {
         name: data.clientName || '',
-        email: data.clientEmail,
+        email,
         street: data.clientAddress?.street || '',
         city: data.clientAddress?.city || '',
         postalCode: data.clientAddress?.postCode || '',
@@ -180,13 +191,14 @@ const errors = isDraft ? [] : validateInvoiceInput(data);
     if (errors.length > 0) {
       return NextResponse.json({ errors }, { status: 400 });
     }
-    const clientData = buildClient(data);
+    const invoiceNumber = data.invoiceNumber || generateInvoiceNumber();
+    const clientData = buildClient(data, invoiceNumber);
     const normalizedItems = normalizeItems(data.items);
     const totalAmount = calculateTotalAmount(normalizedItems);
     const defaultUser = await ensureDefaultUser();
     const invoice = await prisma.invoice.create({
       data: {
-        invoiceNumber: generateInvoiceNumber(),
+        invoiceNumber,
         invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : new Date(),
         paymentDue: data.paymentDue ? new Date(data.paymentDue) : new Date(),
         paymentTerms: mapPaymentTerms(data.paymentTerms),
